@@ -1,6 +1,5 @@
 from json import dumps
 from os import environ
-from sys import stdout
 
 from ansig.configurator import ConfigParser
 
@@ -38,40 +37,26 @@ class Generator(object):
 
         return regions
 
-    def generate_host_list(self):
+    def generate_host_list(self, refresh=False):
         ''' Generates a list of available hosts and their metadata '''
 
-        inventory = self._default_inventory
-        inventory.update({
-            'all': {
-                'hosts': ['ansible-test.ops.bliminternal.com']
-            },
-            'webservers': {
-                'hosts': ['ansible-test.ops.bliminternal.com']
-            }
-        })
+        output = self._default_inventory
 
-        stdout.write(dumps(inventory, indent=2))
+        return dumps(output, indent=2)
 
-    def generate_host_info(self, host):
+    def generate_host_info(self, host, refresh=False):
         ''' Generates all the metadata for a specific host '''
 
-        inventory = {}
+        output = {}
 
-        stdout.write(dumps(inventory, indent=2))
+        return dumps(output, indent=2)
 
-    def generate_debug_info(self, filename=None):
+    def generate_debug_info(self):
         ''' Generates debugging information '''
 
-        try:
-            pipe = open(filename, 'w')
-        except IOError:
-            pipe = stdout
+        output = {
+            'regions': self.regions,
+            'config': dict((k, v) for (k, v) in self.config.items('aws')),
+        }
 
-        pipe.write('regions\n')
-        for region in self.regions:
-            pipe.write('==> {0}\n'.format(region))
-
-        pipe.write('configuration\n')
-        for key, value in self.config.items('aws'):
-            pipe.write('==> {0}: {1}\n'.format(key, value))
+        return dumps(output, indent=2)
